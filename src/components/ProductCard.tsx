@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import type { Product } from "../data/products";
 
-export default function ProductCard({ product }) {
+interface ProductCardProps {
+  product: Product;
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, cartItems } = useCart();
   const productInCart = cartItems.find((item) => item.id === product.id);
 

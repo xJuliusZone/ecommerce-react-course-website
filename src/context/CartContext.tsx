@@ -1,12 +1,36 @@
 import { createContext, useState, useContext } from "react";
-import { getProductById } from "../data/products";
+import type { ReactNode } from "react";
+import { getProductById, type Product } from "../data/products";
 
-const CartContext = createContext(null);
+export interface CartItem {
+  id: number;
+  quantity: number;
+}
 
-export default function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]); // {id: 2, quantity: 7}
+export interface CartItemWithProduct extends CartItem {
+  product: Product;
+}
 
-  function addToCart(productId) {
+interface CartContextValue {
+  cartItems: CartItem[];
+  addToCart: (productId: number) => void;
+  getCartItemsWithProducts: () => CartItemWithProduct[];
+  removeFromCart: (productId: number) => void;
+  updateQuantity: (productId: number, quantity: number) => void;
+  getCartTotal: () => number;
+  clearCart: () => void;
+}
+
+interface CartProviderProps {
+  children: ReactNode;
+}
+
+const CartContext = createContext<CartContextValue | null>(null);
+
+export default function CartProvider({ children }: CartProviderProps) {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  function addToCart(productId: number) {
     const existing = cartItems.find((item) => item.id === productId);
     if (existing) {
       const currentQuantity = existing.quantity;
@@ -21,20 +45,20 @@ export default function CartProvider({ children }) {
     }
   }
 
-  function getCartItemsWithProducts() {
+  function getCartItemsWithProducts(): CartItemWithProduct[] {
     return cartItems
       .map((item) => ({
         ...item,
         product: getProductById(item.id),
       }))
-      .filter((item) => item.product);
+      .filter((item): item is CartItemWithProduct => Boolean(item.product));
   }
 
-  function removeFromCart(productId) {
+  function removeFromCart(productId: number) {
     setCartItems(cartItems.filter((item) => item.id !== productId));
   }
 
-  function updateQuantity(productId, quantity) {
+  function updateQuantity(productId: number, quantity: number) {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -75,8 +99,12 @@ export default function CartProvider({ children }) {
   );
 }
 
-export function useCart() {
+export function useCart(): CartContextValue {
   const context = useContext(CartContext);
+
+  if (!context) {
+    throw new Error("useCart must be used within CartProvider");
+  }
 
   return context;
 }

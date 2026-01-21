@@ -1,4 +1,12 @@
-const products = [
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+}
+
+const products: Product[] = [
   {
     id: 1,
     name: "Wireless Headphones",
@@ -73,10 +81,10 @@ const products = [
   },
 ];
 
-export function getProducts() {
+export function getProducts(): Product[] {
   return products;
 }
 
-export function getProductById(id) {
+export function getProductById(id: number | string | undefined): Product | undefined {
   return products.find((p) => p.id === Number(id));
 }
